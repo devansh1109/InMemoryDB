@@ -28,8 +28,8 @@ A high-performance, Redis-like in-memory cache implementation in Java featuring 
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/inmemory-cache.git
-cd inmemory-cache
+git clone https://github.com/devansh1109/InMemoryDB.git
+cd InMemoryDB
 
 # Compile the project
 mvn compile
