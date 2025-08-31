@@ -22,20 +22,20 @@ A high-performance, Redis-like in-memory cache implementation in Java featuring 
 
 ### Prerequisites
 - Java 17 or higher
-- Maven 3.6+
+
 
 ### Build & Run
 
-```bash
+```powershell
 # Clone the repository
 git clone https://github.com/devansh1109/InMemoryDB.git
 cd InMemoryDB
 
-# Compile the project
-mvn compile
+# Compile all Java files
+javac -d target\classes src\main\java\com\dev\*.java
 
-# Run the demo
-mvn exec:java -Dexec.mainClass="com.dev.App"
+# Run the demo application
+java -cp target\classes com.dev.App
 ```
 
 ## 💡 Usage
