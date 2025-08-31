@@ -1,11 +1,14 @@
 package com.dev;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class LRUCache {
     private int capacity;
     private Map<String,Node> cache;
-    private Node head,tail;    
+    private Node head,tail; 
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+   
 
     private class Node {
         String key;
@@ -30,45 +33,63 @@ public class LRUCache {
     }
 
     public String get(String key){
-        if(!cache.containsKey(key)) return null;
-        Node node = cache.get(key);
-        removeNode(node);
-        insertToTail(node);
-        return node.value;
-    }
-
-    public void put(String key, String value){
-        if(cache.containsKey(key)){
-            Node existingNode = cache.get(key);
-            existingNode.value = value;  // Update existing value
-            removeNode(existingNode);
-            insertToTail(existingNode);
-            return;
+        lock.writeLock().lock();
+        try{
+            Node node = cache.get(key);
+            if(node == null) return null;
+            removeNode(node);
+            insertToTail(node);
+            return node.value;
+        }finally{
+            lock.writeLock().unlock();
         }
-        
-        Node newnode = new Node(key,value);
-        insertToTail(newnode);
-        cache.put(key,newnode);
+    }
+    public void put(String key, String value){
+        lock.writeLock().lock();
+        try{
+            if(cache.containsKey(key)){
+                Node existingNode = cache.get(key);
+                existingNode.value = value;  // Update value
+                removeNode(existingNode);
+                insertToTail(existingNode);
+            } else {
+                Node newNode = new Node(key, value);
+                insertToTail(newNode);
+                cache.put(key, newNode);
 
-        if(cache.size() > capacity){
-            Node lru = head.next;
-            removeNode(lru);
-            cache.remove(lru.key);
+                if(cache.size() > capacity){
+                    Node lru = head.next;
+                    removeNode(lru);
+                    cache.remove(lru.key);
+                }
+            }
+        }finally{
+            lock.writeLock().unlock();
         }
     }
 
     public boolean remove(String key) {
-        if (!cache.containsKey(key)) {
-            return false;
+        lock.writeLock().lock();
+        try{
+            if (!cache.containsKey(key)) {
+                return false;
+            }
+            Node node = cache.get(key);
+            removeNode(node);
+            cache.remove(key);
+            return true;
+        }finally{
+            lock.writeLock().unlock();
         }
-        Node node = cache.get(key);
-        removeNode(node);
-        cache.remove(key);
-        return true;
     }
 
     public int size() {
-        return cache.size();
+        lock.readLock().lock();
+        try{
+            return cache.size();
+        }finally{
+            lock.readLock().unlock();
+        }
     }
 
     public int getCapacity() {
@@ -86,6 +107,4 @@ public class LRUCache {
         tail.prev.next = node;
         tail.prev = node;
     }
-
-
 }
